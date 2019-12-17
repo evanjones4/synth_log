@@ -54,11 +54,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public Cursor getAllDevices(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor res = db.query(true, "patches_table", new String[] {"device","patch"}, null, null, "device", null, null, null);
+        return res;
+    }
 
     public Integer deleteData(String device, String patch){
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(TABLE_NAME, "DEVICE=? and PATCH=?",new String[] {device,patch});
     }
+
+    public Integer deleteDevice(String device){
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(TABLE_NAME, "DEVICE=?",new String[] {device});
+    }
+
 
     public Integer clearData(){
         SQLiteDatabase db = this.getWritableDatabase();
