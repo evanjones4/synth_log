@@ -19,6 +19,18 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <Button
+        android:id="@+id/button_deleteDevice2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.544"
+        app:layout_constraintStart_toEndOf="@+id/button_addDevice"
+        app:layout_constraintTop_toTopOf="@+id/button_addDevice"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
         android:id="@+id/button_addDevice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -46,7 +58,18 @@
         android:layout_marginTop="32dp"
         android:ems="10"
         android:inputType="textPersonName"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="99dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Back"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/button_deleteDevice"
+        app:layout_constraintStart_toStartOf="@+id/button_deleteDevice"
+        app:layout_constraintTop_toBottomOf="@+id/button_deleteDevice" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

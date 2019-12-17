@@ -67,18 +67,31 @@ public class MainActivity extends AppCompatActivity {
         if (getIntent().hasExtra("METHOD TYPE")) {
     //            Toast.makeText(MainActivity.this,getIntent().getExtras().getInt("METHOD TYPE") +
     //                    " " + getIntent().getExtras().getString("DEVICE NAME"), Toast.LENGTH_LONG).show();
+            String device = getIntent().getExtras().getString("DEVICE NAME");
                 switch (getIntent().getExtras().getInt("METHOD TYPE")) {
                     case 1:
                         //ADD button clicked
-                        deviceList.add(getIntent().getExtras().getString("DEVICE NAME"));
+                        if(deviceList.contains(device)) {
+                            Toast.makeText(MainActivity.this, device + " already exists", Toast.LENGTH_LONG).show();
+                        }else{
+                            deviceList.add(device);
+                            Toast.makeText(MainActivity.this,device + " added", Toast.LENGTH_LONG).show();
+                        }
                         break;
 
                     case 2:
                         //DELETE button clicked
-                        deviceList.remove(getIntent().getExtras().getString("DEVICE NAME"));
-                        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, deviceList);
-                        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        myDb.deleteDevice(getIntent().getExtras().getString("DEVICE NAME"));
+                        if(deviceList.contains(device)) {
+                            arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, deviceList);
+                            arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            myDb.deleteDevice(getIntent().getExtras().getString("DEVICE NAME"));
+                            Toast.makeText(MainActivity.this,device + " deleted", Toast.LENGTH_LONG).show();
+
+                        }else{
+                            Toast.makeText(MainActivity.this, device + " does not exist", Toast.LENGTH_LONG).show();
+
+                        }
+
                         break;
                 }
             }
@@ -98,12 +111,19 @@ public class MainActivity extends AppCompatActivity {
         btnAddData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean isInserted = myDb.insertData(editDevice.getSelectedItem().toString().toUpperCase(),editPatch.getText().toString().toUpperCase());
-                if (isInserted == true){
-                    Toast.makeText(MainActivity.this,"Patch inserted", Toast.LENGTH_LONG).show();
+                String device = editDevice.getSelectedItem().toString().toUpperCase();
+                String patch = editPatch.getText().toString().toUpperCase();
+                Cursor res = myDb.searchData(device,patch);
+                if(res.getCount()==0) {
+                    boolean isInserted = myDb.insertData(device,patch);
+                    if (isInserted == true) {
+                        Toast.makeText(MainActivity.this, "Patch inserted", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Patch not inserted", Toast.LENGTH_LONG).show();
+                    }
                 }
                 else{
-                    Toast.makeText(MainActivity.this,"Patch not inserted", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Patch already exists", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -133,7 +153,9 @@ public class MainActivity extends AppCompatActivity {
         btnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Cursor res = myDb.searchData(editDevice.getSelectedItem().toString().toUpperCase(),editPatch.getText().toString().toUpperCase());
+                String device = editDevice.getSelectedItem().toString().toUpperCase();
+                String patch = editPatch.getText().toString().toUpperCase();
+                Cursor res = myDb.searchData(device,patch);
                 if (res.getCount()!=0){
                     Toast.makeText(MainActivity.this,"Patch exists", Toast.LENGTH_LONG).show();
                 }
@@ -148,13 +170,14 @@ public class MainActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Integer deletedRows = myDb.deleteData(editDevice.getSelectedItem().toString().toUpperCase(),editPatch.getText().toString().toUpperCase());
-
+                String device = editDevice.getSelectedItem().toString().toUpperCase();
+                String patch = editPatch.getText().toString().toUpperCase();
+                Integer deletedRows = myDb.deleteData(device,patch);
                 if(deletedRows>0){
                     Toast.makeText(MainActivity.this,"Patch deleted", Toast.LENGTH_LONG).show();
                 }
                 else{
-                    Toast.makeText(MainActivity.this,"Patch not deleted", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this,"Patch does not exist", Toast.LENGTH_LONG).show();
                 }
             }
         });

@@ -17,6 +17,7 @@ public class Main2Activity extends AppCompatActivity {
     ArrayList<String> deviceList = new ArrayList<String>();
     Button btnAdd;
     Button btnDelete;
+    Button back;
 
 
     @Override
@@ -26,9 +27,11 @@ public class Main2Activity extends AppCompatActivity {
         editDevice = (EditText) findViewById(R.id.edit_device);
         btnAdd = (Button) findViewById(R.id.button_addDevice);
         btnDelete = (Button) findViewById(R.id.button_deleteDevice);
+        back = (Button) findViewById(R.id.button_back);
 
         AddDevice();
         DeleteDevice();
+        Back();
     }
 
     public void AddDevice(){
@@ -40,7 +43,6 @@ public class Main2Activity extends AppCompatActivity {
                     intent.putExtra("METHOD TYPE", 1);
                     intent.putExtra("DEVICE NAME", editDevice.getText().toString().toUpperCase());
                     startActivity(intent);
-//                Toast.makeText(Main2Activity.this,"Added", Toast.LENGTH_LONG).show();
                 }
         });
     }
@@ -54,16 +56,18 @@ public class Main2Activity extends AppCompatActivity {
                 intent.putExtra("METHOD TYPE", 2);
                 intent.putExtra("DEVICE NAME", editDevice.getText().toString().toUpperCase());
                 startActivity(intent);
-//              Toast.makeText(Main2Activity.this,"Deleted", Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    public void showMessage(String title, String message){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true);
-        builder.setTitle(title);
-        builder.setMessage(message);
-        builder.show();
+    public void Back(){
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+            }
+        });
     }
+
 }
