@@ -28,10 +28,6 @@ public class MainActivity extends AppCompatActivity {
     Button btnUpdateDevices;
     ArrayList<String> deviceList;
 
-
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,9 +52,11 @@ public class MainActivity extends AppCompatActivity {
         UpdateDevices();
 
         deviceList = new ArrayList<>();
-        Cursor res = myDb.getAllDevices();
-        while(res.moveToNext()){
-            deviceList.add(res.getString(0));
+        if(myDb.getAllData().getCount()>0){
+            Cursor res = myDb.getAllDevices();
+            while(res.moveToNext()){
+                deviceList.add(res.getString(0));
+            }
         }
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, deviceList);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -75,28 +73,35 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, device + " already exists", Toast.LENGTH_LONG).show();
                         }else{
                             deviceList.add(device);
+                            arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, deviceList);
+                            arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            editDevice.setAdapter(arrayAdapter);
                             Toast.makeText(MainActivity.this,device + " added", Toast.LENGTH_LONG).show();
+
                         }
                         break;
 
                     case 2:
                         //DELETE button clicked
                         if(deviceList.contains(device)) {
-                            arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, deviceList);
-                            arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                            myDb.deleteDevice(getIntent().getExtras().getString("DEVICE NAME"));
+                            deviceList.remove(device);
+                            if(deviceList.isEmpty()){
+                                deviceList = new ArrayList<>();
+                            }
+                                arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, deviceList);
+                                arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                editDevice.setAdapter(arrayAdapter);
+                                myDb.deleteDevice(device);
+
                             Toast.makeText(MainActivity.this,device + " deleted", Toast.LENGTH_LONG).show();
 
                         }else{
                             Toast.makeText(MainActivity.this, device + " does not exist", Toast.LENGTH_LONG).show();
-
                         }
-
                         break;
                 }
             }
         else if(myDb.getAllData().getCount()==0){
-//            Toast.makeText(MainActivity.this,"", Toast.LENGTH_LONG).show();
             showMessage("DATABASE EMPTY", "Please add a new device");
             Intent startIntent = new Intent(getApplicationContext(),Main2Activity.class);
             startActivity(startIntent);
@@ -117,13 +122,13 @@ public class MainActivity extends AppCompatActivity {
                 if(res.getCount()==0) {
                     boolean isInserted = myDb.insertData(device,patch);
                     if (isInserted == true) {
-                        Toast.makeText(MainActivity.this, "Patch inserted", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, device + " " + patch + " inserted", Toast.LENGTH_LONG).show();
                     } else {
-                        Toast.makeText(MainActivity.this, "Patch not inserted", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, device + " " + patch + " not inserted", Toast.LENGTH_LONG).show();
                     }
                 }
                 else{
-                    Toast.makeText(MainActivity.this, "Patch already exists", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, device + " " + patch + " already exists", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -155,12 +160,16 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String device = editDevice.getSelectedItem().toString().toUpperCase();
                 String patch = editPatch.getText().toString().toUpperCase();
-                Cursor res = myDb.searchData(device,patch);
-                if (res.getCount()!=0){
-                    Toast.makeText(MainActivity.this,"Patch exists", Toast.LENGTH_LONG).show();
+                if(myDb.getAllData().getCount()>0) {
+                    Cursor res = myDb.searchData(device, patch);
+                    if (res.getCount() != 0) {
+                        Toast.makeText(MainActivity.this, device + " " + patch + " exists", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, device + " " + patch + " does not exist", Toast.LENGTH_LONG).show();
+                    }
                 }
                 else{
-                    Toast.makeText(MainActivity.this,"Patch does not exist", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Table is empty", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -170,14 +179,18 @@ public class MainActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String device = editDevice.getSelectedItem().toString().toUpperCase();
-                String patch = editPatch.getText().toString().toUpperCase();
-                Integer deletedRows = myDb.deleteData(device,patch);
-                if(deletedRows>0){
-                    Toast.makeText(MainActivity.this,"Patch deleted", Toast.LENGTH_LONG).show();
+                if(myDb.getAllData().getCount()>0) {
+                    String device = editDevice.getSelectedItem().toString().toUpperCase();
+                    String patch = editPatch.getText().toString().toUpperCase();
+                    Integer deletedRows = myDb.deleteData(device, patch);
+                    if (deletedRows > 0) {
+                        Toast.makeText(MainActivity.this, device + " " + patch + " deleted", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, device + " " + patch + " does not exist", Toast.LENGTH_LONG).show();
+                    }
                 }
                 else{
-                    Toast.makeText(MainActivity.this,"Patch does not exist", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Table is already empty", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -196,38 +209,32 @@ public class MainActivity extends AppCompatActivity {
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ClearDataHelper();
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                Integer deletedRows = myDb.clearData();
+                                if(deletedRows>0){
+                                    Toast.makeText(MainActivity.this,"Table cleared", Toast.LENGTH_LONG).show();
+                                }
+                                else{
+                                    Toast.makeText(MainActivity.this,"Table is already empty", Toast.LENGTH_LONG).show();
+                                }
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                Toast.makeText(MainActivity.this,"Table not deleted", Toast.LENGTH_LONG).show();
+                                break;
+                        }
+                    }
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setMessage("Are you sure you want to clear all data?").setPositiveButton("Yes", dialogClickListener)
+                        .setNegativeButton("No", dialogClickListener).show();
             }
         });
-    }
-
-
-
-    public void ClearDataHelper(){
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        Integer deletedRows = myDb.clearData();
-                        if(deletedRows>0){
-                            Toast.makeText(MainActivity.this,"Table deleted", Toast.LENGTH_LONG).show();
-                        }
-                        else{
-                            Toast.makeText(MainActivity.this,"Table not deleted", Toast.LENGTH_LONG).show();
-                        }
-                        break;
-
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        Toast.makeText(MainActivity.this,"Table not deleted", Toast.LENGTH_LONG).show();
-                        break;
-                }
-            }
-        };
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
-                .setNegativeButton("No", dialogClickListener).show();
     }
 
     public void UpdateDevices(){

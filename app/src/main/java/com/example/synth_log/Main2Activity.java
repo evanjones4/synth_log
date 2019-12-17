@@ -3,6 +3,7 @@ package com.example.synth_log;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 
 public class Main2Activity extends AppCompatActivity {
     EditText editDevice;
-    ArrayList<String> deviceList = new ArrayList<String>();
     Button btnAdd;
     Button btnDelete;
     Button back;
@@ -47,15 +47,45 @@ public class Main2Activity extends AppCompatActivity {
         });
     }
 
+//    public void DeleteDevice(){
+//        btnDelete.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+//
+//                intent.putExtra("METHOD TYPE", 2);
+//                intent.putExtra("DEVICE NAME", editDevice.getText().toString().toUpperCase());
+//                startActivity(intent);
+//            }
+//        });
+//    }
+
     public void DeleteDevice(){
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
 
-                intent.putExtra("METHOD TYPE", 2);
-                intent.putExtra("DEVICE NAME", editDevice.getText().toString().toUpperCase());
-                startActivity(intent);
+                                intent.putExtra("METHOD TYPE", 2);
+                                intent.putExtra("DEVICE NAME", editDevice.getText().toString().toUpperCase());
+                                startActivity(intent);
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                break;
+                        }
+                    }
+                };
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this);
+                builder.setMessage("Are you sure you want to delete " +  editDevice.getText().toString().toUpperCase() + "?").setPositiveButton("Yes", dialogClickListener)
+                        .setNegativeButton("No", dialogClickListener).show();
             }
         });
     }
